@@ -8,14 +8,15 @@
 
 ### Tools and libraries
 
-- JAVASCRIPT
-- CSS
-- HTML
+- JAVASCRIPT (ES6)
+- CSS (GRID LAYOUT, FLEXBOX)
+- HTML5
 
 
 ### To improve:
 
 - Serve app on ExpressJS to run index on Localhost.
+- Add babel for es6 imports.
 - Separation of concerns on functions (create utility functions) for better maintainability.
 - Use JS prototype approach to create a Cell element.
 - Improve code using a more declarative approach on coding.
