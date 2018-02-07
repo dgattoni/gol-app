@@ -22,3 +22,4 @@
 - Add a Test layer (eg chai)
 - Customize grid to work with any rows/cols number.
 - Add Game instructions.
+- Improve documentation on functions input/output.
