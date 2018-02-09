@@ -16,120 +16,156 @@ const $log = document.querySelector('.js-log');
 const gridFragment = document.createDocumentFragment();
 const config = Object.freeze({
   cell: {
-    live: 'live',
-    dead: 'dead',
+    on: 'on',
+    off: 'off',
     liveColor: 'green',
     deadColor: 'white',
   },
   grid: {
     rowsMax: 20,
-    colsMax: 80
+    colsMax: 80,
   },
   delay: 500,
 });
 let interval;
 
 window.addEventListener('load', init);
-$btn.addEventListener('click', startAnalize);
+$btn.addEventListener('click', startLoop);
 $btnStop.addEventListener('click', stopAnalize);
 
+let matrix;
+let newGen;
+
 function init() {
-  printCellsOnBoard($grid);
-  analizeNeighbours($grid);
+  matrix = initializeBoard($grid);
+  const firstGen = createCellGeneration($grid, matrix);
+  $grid.innerHTML = '';
+  $grid.appendChild(printBoard(firstGen));
+  newGen = firstGen;
+}
+
+function startLoop() {
+  interval = setInterval(() => {
+    newGen = createCellGeneration($grid, newGen);
+    $grid.innerHTML = '';
+    $grid.appendChild(printBoard(newGen));
+  }, config.delay);
 }
 
 function stopAnalize() {
   clearInterval(interval);
 }
 
-function startAnalize() {
-  interval = setInterval(() => {
-    try {
-      analizeNeighbours($grid);
+function initializeBoard($grid) {
+  let board = [];
+  let cellRow;
+  for(let row = 1; row <= config.grid.rowsMax; row++) {
+    cellRow = [];
+    for(let col = 1; col <= config.grid.colsMax; col++) {
+      const cellStatus = Math.floor(Math.random() * 2) > 0 ? 'on' : 'off';
+      cellRow.push(cellStatus);
+      gridFragment.appendChild(createCellNode(row, col, cellStatus));
     }
-    catch(e) {
-      stopAnalize(interval);
-      $log.textContent = `Oops! Something went wrong, error: ${e.message}`;
-    }
-  }, config.delay);
-}
-
-function analizeNeighbours($grid) {
-  const { cell } = config;
-  $grid.childNodes.forEach(($node, index) => {
-    const $currentRow = parseInt($node.dataset.row);
-    const $currentCol = parseInt($node.dataset.col);
-    const initRow = $currentRow - 1;
-    const lastRow = $currentRow + 1;
-    const initCol = $currentCol - 1;
-    const lastCol = $currentCol + 1;
-    const neighboursCollection = [];
-    for(let row = initRow; row <= lastRow; row++) {
-      for(let col = initCol; col <= lastCol; col++) {
-        if(row !== $currentRow || col !== $currentCol) {
-          const $neighbourCell = document.querySelector(`.js-cell-${row}-${col}`);
-          if($neighbourCell) {
-            neighboursCollection.push($neighbourCell);
-          }
-        }
-      }
-    }
-    const liveNeighbours = neighboursCollection.filter($node => $node.dataset.status === cell.live);
-    evaluateCellStatus($node, cell, liveNeighbours);
-  });
-}
-
-function evaluateCellStatus($node, cell, neighbours) {
-  switch ($node.dataset.status) {
-    case cell.live:
-    // - Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
-    if(neighbours.length < 2) {
-      $node.dataset.status = cell.dead;
-      $node.style.backgroundColor = cell.deadColor;
-    }
-    // - Any live cell with two or three live neighbours lives on to the next generation.
-    if(neighbours.length === 2 || neighbours.length === 3) {
-      $node.dataset.status = cell.live;
-      $node.style.backgroundColor = cell.liveColor;
-    }
-    // - Any live cell with more than three live neighbours dies, as if by overpopulation.
-    if(neighbours.length > 3) {
-      $node.dataset.status = cell.dead;
-      $node.style.backgroundColor = cell.deadColor;
-    }
-    break;
-    case cell.dead:
-    // - Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-    if(neighbours.length === 3) {
-      $node.dataset.status = cell.live;
-      $node.style.backgroundColor = cell.liveColor;
-    }
-    break;
-    default:
-      throw Error('cell status doesnt\' match with existing ones.');
+    board = [...board, cellRow];
   }
+  $grid.appendChild(gridFragment);
+  return board;
 }
 
-function createCellNode(row, col) {
-  const { cell } = config;
+function createCellNode(row, col, status) {
+  const { cell: { liveColor, deadColor } } = config;
   const $cell = document.createElement('div');
-  const cellStatus = (Math.floor(Math.random() * 2)) > 0 ? cell.live : cell.dead;
   $cell.setAttribute('class', `js-cell-${row}-${col}`);
-  $cell.setAttribute('data-row', row);
-  $cell.setAttribute('data-col', col);
-  $cell.setAttribute('data-status', cellStatus);
   $cell.style.gridColumn = `col ${col}`;
   $cell.style.gridRow = `row ${row}`;
-  $cell.style.backgroundColor = cellStatus === cell.live ? cell.liveColor : cell.deadColor;
+  $cell.style.backgroundColor = status === 'on' ? liveColor : deadColor;
   return $cell;
 }
 
-function printCellsOnBoard($grid) {
-  const { grid } = config;
-  for(let row = 1; row <= grid.rowsMax; row++) {
-    for(let col = 1; col <= grid.colsMax; col++) {
-      gridFragment.appendChild(createCellNode(row, col));
+function printBoard(matrix) {
+  const fragment = document.createDocumentFragment();
+  matrix.forEach((matrixRow, rowIndex) => {
+    matrixRow.forEach((cell, colIndex) => {
+      const $celula = document.createElement('div');
+      $celula.style.backgroundColor =  matrix[rowIndex][colIndex] === 'on' ? config.cell.liveColor : config.cell.deadColor;
+      fragment.appendChild($celula);
+    });
+  });
+  return fragment;
+}
+
+function createCellGeneration($grid, board) {
+  let newBoard = [];
+  let newRow;
+  board.forEach((row, rowIndex) => {
+    newRow = [];
+    row.forEach((cell, colIndex) => {
+      const allNeighbours = [];
+      for(let i = (rowIndex - 1); i <= (rowIndex + 1); i++) {
+        for(let j = (colIndex - 1); j <= (colIndex + 1); j++) {
+          if(board[i] && board[i][j]) {
+            if(rowIndex !== i || colIndex !== j) {
+              allNeighbours.push(board[i][j]);
+            }
+          }
+        } //for cols
+      } //for rows
+      const liveNeighbours = allNeighbours.filter(neighbour => neighbour === 'on');
+      const cellOnEvaluation = board[rowIndex][colIndex];
+      switch (cellOnEvaluation) {
+        case config.cell.on:
+        if(liveNeighbours.length < 2 || liveNeighbours.length > 3) {
+          // - Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
+          // - Any live cell with more than three live neighbours dies, as if by overpopulation.
+          return newRow.push('off');
+        } else if(liveNeighbours.length === 2 || liveNeighbours.length === 3) {
+          // - Any live cell with two or three live neighbours lives on to the next generation.
+          newRow.push('on');
+        } else {
+          newRow.push(cell);
+        }
+        break;
+        case config.cell.off:
+        // - Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+        if(liveNeighbours.length === 3) {
+          newRow.push('on');
+        } else {
+          newRow.push(cell);
+        }
+        break;
+        default:
+        throw Error('cell status doesnt\' match with existing ones.');
+      }
+    });
+    newBoard = [...newBoard, newRow];
+  });
+  return newBoard;
+}
+
+function evaluateCell(cell, neighbours) {
+  const newRow = [];
+  switch (cell) {
+    case 'on':
+    if(neighbours.length < 2 || neighbours.length > 3) {
+      // - Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
+      // - Any live cell with more than three live neighbours dies, as if by overpopulation.
+      return newRow.push('off');
+    } else if(neighbours.length === 2 || neighbours.length === 3) {
+      // - Any live cell with two or three live neighbours lives on to the next generation.
+      return newRow.push('on');
+    } else {
+      return newRow.push(cell);
     }
+    break;
+    case 'off':
+    // - Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+    if(neighbours.length === 3) {
+      return newRow.push('on');
+    } else {
+      return newRow.push(cell);
+    }
+    break;
+    default:
+    throw Error('cell status doesnt\' match with existing ones.');
   }
-  $grid.appendChild(gridFragment);
 }
