@@ -1,171 +1,228 @@
-/*
-Assume a fixed size board, eg 80 columns by 20 rows
-To start the game, randomly set each cell on the board either ON or OFF
-Print the status of the board to the screen
-Enter an infinite loop:
-Wait half a second
-Produce a new "tick" of the board
-Print the status of the board to the screen
-The wikipedia article linked above describes the rules for each "tick":
-*/
 
 const $grid = document.querySelector('.js-grid');
 const $btn = document.querySelector('.js-btn');
 const $btnStop = document.querySelector('.js-btn-stop');
 const $log = document.querySelector('.js-log');
 const gridFragment = document.createDocumentFragment();
-const config = Object.freeze({
-  cell: {
-    on: 'on',
-    off: 'off',
-    liveColor: 'green',
-    deadColor: 'white',
-  },
-  grid: {
-    rowsMax: 20,
-    colsMax: 80,
-  },
-  delay: 500,
-});
 let interval;
+let randomCellSeed;
+let nextGen;
 
-window.addEventListener('load', init);
-$btn.addEventListener('click', startLoop);
-$btnStop.addEventListener('click', stopAnalize);
+const GameOfLifeAPI = Object.freeze({
+  /*
+    This is the configuration of the Game.
+    The script will get access to the different values of the 'defaultOptions' object.
+  */
+  defaultOptions: {
+    cell: {
+      CELL_ON: 'on',
+      CELL_OFF: 'off',
+      LIVE_COLOR: '#008000',
+      DEAD_COLOR: '#FFF',
+      CELL_SIZE: '.5rem',
+    },
+    grid: {
+      ROWS_MAX: 20,
+      COLS_MAX: 80,
+    },
+    DELAY: 500,
+  },
+  init,
+  start,
+  stop,
+});
 
-let matrix;
-let newGen;
+window.addEventListener('load', () => GameOfLifeAPI.init());
+$btn.addEventListener('click', () => GameOfLifeAPI.start());
+$btnStop.addEventListener('click', () => GameOfLifeAPI.stop());
 
-function init() {
-  matrix = initializeBoard($grid);
-  const firstGen = createCellGeneration($grid, matrix);
-  $grid.innerHTML = '';
-  $grid.appendChild(printBoard(firstGen));
-  newGen = firstGen;
+
+/**
+ * initializes the App.
+ * @param {object} config configuration options
+ */
+function init(config = {}) {
+  const options = { ...GameOfLifeAPI.defaultOptions, ...config };
+  randomCellSeed = randomizeCellSeed(options);
+  const firstGen = createCellGenerationFrom(randomCellSeed, options);
+  $grid.appendChild(createDocumentFragmentFrom(firstGen, options));
+  nextGen = firstGen;
 }
 
-function startLoop() {
+
+/**
+ * Starts the App.
+ * @param {object} config configuration options
+ */
+function start(config = {}) {
+  const options = { ...GameOfLifeAPI.defaultOptions, ...config };
   interval = setInterval(() => {
-    newGen = createCellGeneration($grid, newGen);
+    nextGen = createCellGenerationFrom(nextGen, options);
     $grid.innerHTML = '';
-    $grid.appendChild(printBoard(newGen));
-  }, config.delay);
+    $grid.appendChild(createDocumentFragmentFrom(nextGen, options));
+  },
+  options.DELAY);
 }
 
-function stopAnalize() {
+
+/**
+ * Stops the App's infinite loop.
+ */
+function stop() {
   clearInterval(interval);
 }
 
-function initializeBoard($grid) {
-  let board = [];
+
+/**
+ * Creates and Populates a documentFragment context-free container as from a given multidimensional array.
+ *   Docs at developer.mozilla.org/en-US/docs/Web/API/DocumentFragment
+ * @param {array} stateArr a multi-dimensional array
+ * @param {object} options configuration options
+ * @returns {object} a DocumentFragment object
+ */
+function createDocumentFragmentFrom(stateArr, options) {
+  const cellOptions = options.cell;
+  const documentFragment = document.createDocumentFragment();
+  stateArr.forEach((row, indexRow) => {
+    row.forEach((cellStatus, indexCol) => {
+      const $cellElement = createCellElement(indexRow, indexCol, cellStatus, cellOptions);
+      documentFragment.appendChild($cellElement);
+    });
+  });
+  return documentFragment;
+}
+
+
+/**
+ * Creates a div node with a given status and gridRow/gridColumn position.
+ * @param {number} indexRow  position of row index in the array
+ * @param {number} indexCol  position of col index in the array
+ * @param {string} cellStatus the current cell status
+ * @param {object} cellOptions cell options configuration
+ * @returns {object} a DOM Element Node object
+ */
+function createCellElement(indexRow, indexCol, cellStatus, cellOptions) {
+  const { CELL_ON, CELL_OFF, LIVE_COLOR, DEAD_COLOR } = cellOptions;
+  const gridRowIndex = indexRow + 1;
+  const GridColIndex = indexCol + 1;
+  const $cellNode = document.createElement('div');
+  $cellNode.setAttribute('class', `js-cell-${gridRowIndex}-${GridColIndex}`);
+  $cellNode.style.gridRow = `row ${gridRowIndex}`;
+  $cellNode.style.gridColumn = `col ${GridColIndex}`;
+  $cellNode.style.backgroundColor = cellStatus === CELL_ON ? LIVE_COLOR : DEAD_COLOR;
+  return $cellNode;
+}
+
+
+/**
+ * Generates a random binary value 'on'|'off'
+ * @param {object} options configuration options
+ * @returns {string} a 'on'|'off' value
+ */
+function randomizeCellState(options) {
+  const { cell: { CELL_ON, CELL_OFF } } = options;
+  return Math.floor(Math.random() * 2) > 0 ? CELL_ON : CELL_OFF;
+}
+
+
+/**
+ * Populates a multidimensional Array with random 'on'|'off' values
+ * @param {object} options configuration options
+ * @returns {array} a multi-dimensional array
+ */
+function randomizeCellSeed(options) {
+  const { grid: { COLS_MAX, ROWS_MAX } } = options;
+  let seedGrid = [];
   let cellRow;
-  for(let row = 1; row <= config.grid.rowsMax; row++) {
+  for(let row = 0; row < ROWS_MAX; row++) {
     cellRow = [];
-    for(let col = 1; col <= config.grid.colsMax; col++) {
-      const cellStatus = Math.floor(Math.random() * 2) > 0 ? 'on' : 'off';
-      cellRow.push(cellStatus);
-      gridFragment.appendChild(createCellNode(row, col, cellStatus));
+    for(let col = 0; col < COLS_MAX; col++) {
+      const cellState = randomizeCellState(options);
+      cellRow.push(cellState);
     }
-    board = [...board, cellRow];
+    seedGrid = [...seedGrid, cellRow];
   }
-  $grid.appendChild(gridFragment);
-  return board;
+  return seedGrid;
 }
 
-function createCellNode(row, col, status) {
-  const { cell: { liveColor, deadColor } } = config;
-  const $cell = document.createElement('div');
-  $cell.setAttribute('class', `js-cell-${row}-${col}`);
-  $cell.style.gridColumn = `col ${col}`;
-  $cell.style.gridRow = `row ${row}`;
-  $cell.style.backgroundColor = status === 'on' ? liveColor : deadColor;
-  return $cell;
-}
 
-function printBoard(matrix) {
-  const fragment = document.createDocumentFragment();
-  matrix.forEach((matrixRow, rowIndex) => {
-    matrixRow.forEach((cell, colIndex) => {
-      const $celula = document.createElement('div');
-      $celula.style.backgroundColor =  matrix[rowIndex][colIndex] === 'on' ? config.cell.liveColor : config.cell.deadColor;
-      fragment.appendChild($celula);
+/**
+ * Creates a new multi-dimensional array of cells from a previous multi-dimensional array.
+ * @param {number} prevState a multi-dimensional Array
+ * @param {object} options configuration options
+ * @returns {array} newState a multi-dimensional Array
+ */
+function createCellGenerationFrom(prevState, options) {
+  let newState = [];
+  let newStateRow;
+
+  prevState.forEach((prevStateRow, indexRow) => {
+    newStateRow = [];
+    prevStateRow.forEach((currentCell, indexCol) => {
+      const filteredNeighbours = getNeighbours(indexRow, indexCol, prevState);
+      const updatedCellState = updateCurrentCellState(currentCell, filteredNeighbours, options);
+      newStateRow.push(updatedCellState);
     });
+    newState = [...newState, newStateRow];
   });
-  return fragment;
+  return newState;
 }
 
-function createCellGeneration($grid, board) {
-  let newBoard = [];
-  let newRow;
-  board.forEach((row, rowIndex) => {
-    newRow = [];
-    row.forEach((cell, colIndex) => {
-      const allNeighbours = [];
-      for(let i = (rowIndex - 1); i <= (rowIndex + 1); i++) {
-        for(let j = (colIndex - 1); j <= (colIndex + 1); j++) {
-          if(board[i] && board[i][j]) {
-            if(rowIndex !== i || colIndex !== j) {
-              allNeighbours.push(board[i][j]);
-            }
-          }
-        } //for cols
-      } //for rows
-      const liveNeighbours = allNeighbours.filter(neighbour => neighbour === 'on');
-      const cellOnEvaluation = board[rowIndex][colIndex];
-      switch (cellOnEvaluation) {
-        case config.cell.on:
-        if(liveNeighbours.length < 2 || liveNeighbours.length > 3) {
-          // - Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
-          // - Any live cell with more than three live neighbours dies, as if by overpopulation.
-          return newRow.push('off');
-        } else if(liveNeighbours.length === 2 || liveNeighbours.length === 3) {
-          // - Any live cell with two or three live neighbours lives on to the next generation.
-          newRow.push('on');
-        } else {
-          newRow.push(cell);
+
+/**
+ * Creates a 3x3 multi-dimensional array of neighbours with any value, that surounds a given cell.
+ * @param {number} indexRow current row index
+ * @param {number} indexCol current col index
+ * @param {array} prevState a multi-dimensional Array
+ * @returns {array} cellNeighbours
+ */
+function getNeighbours(indexRow, indexCol, prevState) {
+  let cellNeighbours = [];
+  for(let i = (indexRow - 1); i <= (indexRow + 1); i++) {
+    for(let j = (indexCol - 1); j <= (indexCol + 1); j++) {
+      if(prevState[i] && prevState[i][j]) {
+        if(indexRow !== i || indexCol !== j) {
+          cellNeighbours.push(prevState[i][j]);
         }
-        break;
-        case config.cell.off:
-        // - Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-        if(liveNeighbours.length === 3) {
-          newRow.push('on');
-        } else {
-          newRow.push(cell);
-        }
-        break;
-        default:
-        throw Error('cell status doesnt\' match with existing ones.');
       }
-    });
-    newBoard = [...newBoard, newRow];
-  });
-  return newBoard;
+    } //for cols
+  } //for rows
+  return cellNeighbours;
 }
 
-function evaluateCell(cell, neighbours) {
-  const newRow = [];
-  switch (cell) {
-    case 'on':
-    if(neighbours.length < 2 || neighbours.length > 3) {
+/**
+ * Updates a Cell's value according to rules applied to its neighbours.
+ * @param {string} currentCell a cell's value 'on' | 'off'
+ * @param {array} neighbours a single array of neighbours that surrounds a given cell.
+ * @param {object} options configuration options
+ * @returns {string} a binary result either 'on' | 'off'
+ */
+function updateCurrentCellState(currentCellValue, neighbours, options) {
+  const { cell: { CELL_ON, CELL_OFF } } = options;
+  const filteredNeighbours = neighbours.filter(neighbour => neighbour === CELL_ON);
+
+  switch (currentCellValue) {
+    case CELL_ON:
+    if(filteredNeighbours.length < 2 || filteredNeighbours.length > 3) {
       // - Any live cell with fewer than two live neighbours dies, as if caused by underpopulation.
       // - Any live cell with more than three live neighbours dies, as if by overpopulation.
-      return newRow.push('off');
-    } else if(neighbours.length === 2 || neighbours.length === 3) {
+      return CELL_OFF;
+    } else if(filteredNeighbours.length === 2 || filteredNeighbours.length === 3) {
       // - Any live cell with two or three live neighbours lives on to the next generation.
-      return newRow.push('on');
+      return CELL_ON;
     } else {
-      return newRow.push(cell);
+      return currentCellValue;
     }
     break;
-    case 'off':
+    case CELL_OFF:
     // - Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
-    if(neighbours.length === 3) {
-      return newRow.push('on');
+    if(filteredNeighbours.length === 3) {
+      return CELL_ON
     } else {
-      return newRow.push(cell);
+      return currentCellValue;
     }
     break;
     default:
-    throw Error('cell status doesnt\' match with existing ones.');
+    return currentCellValue;
   }
 }

@@ -1,5 +1,16 @@
 # Game of Life
 
+### Rules
+
+- Assume a fixed size board, eg 80 columns by 20 rows
+- To start the game, randomly set each cell on the board either ON or OFF
+- Print the status of the board to the screen
+- Enter an infinite loop:
+- Wait half a second
+- Produce a new "tick" of the board
+- Print the status of the board to the screen
+- The wikipedia article linked above describes the rules for each "tick":
+
 ### Development
 
 1. Open index.html file in your browser of choice.
