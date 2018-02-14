@@ -1,7 +1,26 @@
 :root {
   --rows-max: 20;
   --cols-max: 80;
-  --cell-size: .5rem;
+  --cell-size: .6rem;
+  --color-live-cell: #009688;
+  --color-dead-cell: #fff;
+}
+
+body {
+  padding: 50px;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.Container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
 }
 
 .Grid {
@@ -10,6 +29,18 @@
   grid-template-rows: repeat(var(--rows-max), [row] var(--cell-size));
   border: 1px solid #ccc;
   margin: 2rem;
+}
+
+/* Selector used on JS */
+.Cell {
+}
+
+.Cell--live {
+  background-color: var(--color-live-cell);
+}
+
+.Cell--dead {
+  background-color: var(--color-dead-cell);
 }
 
 .Header,
@@ -21,7 +52,7 @@
   min-height: 5rem;
 }
 
-.Main {
+.MainContent {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -32,12 +63,4 @@
 
 .Actions {
   display: flex;
-}
-
-.Container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  align-content: center;
 }

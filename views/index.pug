@@ -1,0 +1,14 @@
+extends layout
+
+block content
+  header.header
+    h1=title
+  main.MainContent
+    p.Info.js-log
+    .Actions
+      button.Btn.js-btn(type="button" name="button") Start Game
+      button.Btn.js-btn-stop(type="button" name="button") Stop Game
+      
+    .Grid.js-grid
+  footer.footer
+    a(href="https://dgattoni.github.io/" target="_blank") Daniela Gattoni | Frontend Engineer

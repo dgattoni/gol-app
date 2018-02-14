@@ -17,9 +17,6 @@ const GameOfLifeAPI = Object.freeze({
     cell: {
       CELL_ON: 'on',
       CELL_OFF: 'off',
-      LIVE_COLOR: '#008000',
-      DEAD_COLOR: '#FFF',
-      CELL_SIZE: '.5rem',
     },
     grid: {
       ROWS_MAX: 20,
@@ -32,9 +29,9 @@ const GameOfLifeAPI = Object.freeze({
   stop,
 });
 
-window.addEventListener('load', () => GameOfLifeAPI.init());
-$btn.addEventListener('click', () => GameOfLifeAPI.start());
-$btnStop.addEventListener('click', () => GameOfLifeAPI.stop());
+window.addEventListener('load', GameOfLifeAPI.init);
+$btn.addEventListener('click', GameOfLifeAPI.start);
+$btnStop.addEventListener('click', GameOfLifeAPI.stop);
 
 
 /**
@@ -42,7 +39,10 @@ $btnStop.addEventListener('click', () => GameOfLifeAPI.stop());
  * @param {object} config configuration options
  */
 function init(config = {}) {
-  const options = { ...GameOfLifeAPI.defaultOptions, ...config };
+  const options = {
+    ...GameOfLifeAPI.defaultOptions,
+    ...config,
+  };
   randomCellSeed = randomizeCellSeed(options);
   const firstGen = createCellGenerationFrom(randomCellSeed, options);
   $grid.appendChild(createDocumentFragmentFrom(firstGen, options));
@@ -55,7 +55,10 @@ function init(config = {}) {
  * @param {object} config configuration options
  */
 function start(config = {}) {
-  const options = { ...GameOfLifeAPI.defaultOptions, ...config };
+  const options = {
+    ...GameOfLifeAPI.defaultOptions,
+    ...config
+  };
   interval = setInterval(() => {
     nextGen = createCellGenerationFrom(nextGen, options);
     $grid.innerHTML = '';
@@ -102,14 +105,15 @@ function createDocumentFragmentFrom(stateArr, options) {
  * @returns {object} a DOM Element Node object
  */
 function createCellElement(indexRow, indexCol, cellStatus, cellOptions) {
-  const { CELL_ON, CELL_OFF, LIVE_COLOR, DEAD_COLOR } = cellOptions;
+  const { CELL_ON, CELL_OFF } = cellOptions;
   const gridRowIndex = indexRow + 1;
-  const GridColIndex = indexCol + 1;
+  const gridColIndex = indexCol + 1;
   const $cellNode = document.createElement('div');
-  $cellNode.setAttribute('class', `js-cell-${gridRowIndex}-${GridColIndex}`);
+  const classModifier = cellStatus === CELL_ON ? 'Cell--live' : 'Cell--dead';
+  const jsSelector = `js-cell-${gridRowIndex}-${gridColIndex}`;
+  $cellNode.setAttribute('class', `Cell ${classModifier} ${jsSelector}`);
   $cellNode.style.gridRow = `row ${gridRowIndex}`;
-  $cellNode.style.gridColumn = `col ${GridColIndex}`;
-  $cellNode.style.backgroundColor = cellStatus === CELL_ON ? LIVE_COLOR : DEAD_COLOR;
+  $cellNode.style.gridColumn = `col ${gridColIndex}`;
   return $cellNode;
 }
 
@@ -119,9 +123,8 @@ function createCellElement(indexRow, indexCol, cellStatus, cellOptions) {
  * @param {object} options configuration options
  * @returns {string} a 'on'|'off' value
  */
-function randomizeCellState(options) {
-  const { cell: { CELL_ON, CELL_OFF } } = options;
-  return Math.floor(Math.random() * 2) > 0 ? CELL_ON : CELL_OFF;
+function randomizeCellState({ cell }) {
+  return Math.floor(Math.random() * 2) > 0 ? cell.CELL_ON : cell.CELL_OFF;
 }
 
 
