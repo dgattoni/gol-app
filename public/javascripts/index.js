@@ -15,7 +15,7 @@ const options = Object.freeze({
     ROWS_MAX: 20,
     COLS_MAX: 80,
   },
-  DELAY: 400,
+  DELAY: 100,
 });
 
 const utilsDOM = Object.freeze({
