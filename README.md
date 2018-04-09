@@ -24,6 +24,7 @@
 1. npm install
 2. npm start
 3. navigate to http://localhost:3000 in your browser of choice.
+4. click the `Start` button.
 
 ### Tests
 
@@ -31,22 +32,22 @@
 2. in your terminal Press `a` to run all tests.
 
 
-### Tools and libraries
+### Languages and libraries
 
 - JAVASCRIPT (ES6)
-- CSS (GRID LAYOUT, FLEXBOX)
+- CSS3 (GRID LAYOUT, FLEXBOX)
 - HTML5
+- RAMDA
 - EXPRESS JS
-
 
 ### To improve:
 
-- Serve app on ExpressJS to run index on Localhost.
-- Add babel for es6 imports.
-- Separation of concerns on functions (create utility functions) for better maintainability.
-- Use JS prototype approach to create a Cell element.
-- Improve code using a more declarative approach on coding.
-- Add a Test layer (eg chai)
-- Customize grid to work with any rows/cols number.
-- Add Game instructions.
-- Improve documentation on functions input/output.
+- [done] Serve app on ExpressJS to run index on Localhost.
+- [done] Add Game instructions.
+- [todo] Add babel for es6 imports.
+- [todo] Use JS prototype approach to create a Cell element.
+- [todo] Add a Test layer (eg chai)
+- [todo] Customize grid to work with any rows/cols number.
+- [doing] Separation of concerns on functions (create utility functions) for better maintainability.
+- [doing] Improve code using a more declarative approach on coding.
+- [doing] Improve documentation on functions input/output.
