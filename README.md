@@ -1,5 +1,9 @@
 # Game of Life
 
+### Author:
+- Daniela Gattoni, Frontend Engineer.
+- https://dgattoni.github.io/
+
 ### Rules
 
 - Assume a fixed size board, eg 80 columns by 20 rows
