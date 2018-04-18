@@ -1,16 +1,13 @@
 const compose = R.compose;
+const curry = R.curry;
 const $grid = document.querySelector('.js-grid');
 const $btnStart = document.querySelector('.js-btnStart');
-const trace = R.curry((tag, x) => {
+const trace = curry((tag, x) => {
   console.log(tag, x);
   return x;
 });
 
 const options = Object.freeze({
-   cell: {
-     CELL_ON: 'on',
-     CELL_OFF: 'off',
-   },
   grid: {
     ROWS_MAX: 20,
     COLS_MAX: 80,
@@ -107,6 +104,7 @@ function randomizeCellSeed(options) {
   return seedGrid;
 }
 
+//wip
 function createCellGeneration(prevState) {
   let newState = [];
   let newStateRow;
@@ -123,6 +121,7 @@ function createCellGeneration(prevState) {
   return newState;
 }
 
+//wip
 function getNeighbours(indexRow, indexCol, prevState) {
   let cellNeighbours = [];
   for(let i = (indexRow - 1); i <= (indexRow + 1); i++) {
@@ -137,6 +136,7 @@ function getNeighbours(indexRow, indexCol, prevState) {
   return cellNeighbours;
 }
 
+//wip
 function updateCurrentCellState(currentCellValue, neighbours) {
   const liveNeighbours = neighbours.filter(neighbour => neighbour === 'on');
 
