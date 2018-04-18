@@ -1,0 +1,142 @@
+:root {
+  --rows-max: 20;
+  --cols-max: 80;
+  --cell-size: .6rem;
+  --color-live-cell: #009688;
+  --color-dead-cell: #fff;
+}
+
+body {
+  font-family: "Ropa Sans", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 300;
+}
+
+a {
+  color: #00B7FF;
+}
+
+.Container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  align-content: center;
+}
+
+.Grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols-max), [col] var(--cell-size));
+  grid-template-rows: repeat(var(--rows-max), [row] var(--cell-size));
+  margin: 2rem;
+}
+
+.Cell {
+}
+
+.Cell--live {
+  background-color: var(--color-live-cell);
+}
+
+.Cell--dead {
+  background-color: var(--color-dead-cell);
+}
+
+.Header,
+.Footer {
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  min-height: 5rem;
+}
+
+.MainContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.Actions {
+  display: flex;
+}
+
+
+.Skills {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2rem;
+}
+.Skills-heading {
+  color: #7f7f7f;
+  font-family: "Roboto Mono", monospace;
+  font-size: 1rem;
+}
+
+.Tags {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  list-style-type: none;
+}
+
+.Tag {
+  position: relative;
+  padding: 0.5rem 0.5rem;
+  margin: 0.5rem 0.5rem;
+  color: #ee4c83;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: #EBEBEB;
+  border: 3px solid #292A2C;
+  border-radius: 8px;
+  box-shadow: -4px 4px 0 #E5E5E5;
+  text-shadow: 2px 2px 0 #FFFFFF;
+}
+
+.Btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 6rem;
+  height: 3rem;
+  color: #EBEBEB;
+  font-weight: bold;
+  letter-spacing: 0;
+  background-color: #6CBFD9;
+  border: 3px solid #292A2C;
+  border-radius: 8px;
+  box-shadow: 0 6px 0 #E5E5E5;
+  cursor: pointer;
+  transform-origin: bottom;
+}
+.Btn::before {
+  position: absolute;
+  content: '';
+  width: 98%;
+  height: 4px;
+  top: 2px;
+  left: 2px;
+  border-top: 4px solid #95d1e3;
+  border-radius: 4px;
+}
+.Btn:hover {
+  animation: shake .2s ease-out;
+  animation-iteration-count: 2;
+}
+
+@keyframes shake {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(10deg);
+  }
+  75% {
+    transform: rotate(-10deg);
+  }
+}
